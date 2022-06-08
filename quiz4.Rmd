@@ -1,0 +1,108 @@
+---
+## WEEK 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Question 1
+The American Community Survey distributes downloadable data about United States communities. Download the 2006 microdata survey about housing for the state of Idaho using download.file() from here: 
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv
+
+and load the data into R. The code book, describing the variable names is here:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FPUMSDataDict06.pdf 
+
+Apply strsplit() to split all the names of the data frame on the characters "wgtp". What is the value of the 123 
+
+```{r}
+download.file('https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv'
+              , 'ACS.csv'
+              , method='curl' )
+# Read data into data.frame
+ACS <- read.csv('ACS.csv')
+#insight of the data:
+head(ACS)
+strName<- strsplit(names(ACS), 'wgtp')
+strName[[123]]
+```
+
+## Question 2
+Load the Gross Domestic Product data for the 190 ranked countries in this data set:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv
+
+Remove the commas from the GDP numbers in millions of dollars and average them. What is the average?
+
+Original data sources:
+
+http://data.worldbank.org/data-catalog/GDP-ranking-table
+
+```{r}
+# Download data and read FGDP FEDSTATS_Country
+download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv",
+              'FGDP.csv', method = 'curl' )
+FGDP <-read.csv('FGDP.csv', header = TRUE, skip = 3, sep = ",")
+
+#reshaping the data
+FGDP <- FGDP[2:191,c(1,2,4,5)]
+rownames(FGDP) <- NULL
+FGDP <- rename(FGDP,CountryCode = X)
+                                     
+# How many of the IDs match?
+le <- gsub(",","", FGDP$US.dollars.)
+mean(as.numeric(le))
+```
+
+## Question 4
+Load the Gross Domestic Product data for the 190 ranked countries in this data set:
+
+ https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv 
+
+Load the educational data from this data set:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv
+
+Match the data based on the country shortcode. Of the countries for which the end of the fiscal year is available, how many end in June?
+
+Original data sources: 
+
+http://data.worldbank.org/data-catalog/GDP-ranking-table
+
+http://data.worldbank.org/data-catalog/ed-stats
+```{r}
+# Download data and read FGDP data
+download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv",
+              'FGDP.csv', method = 'curl' )
+FGDP <-read.csv('FGDP.csv', header = TRUE, skip = 3, sep = ",")
+
+# Download data and read FGDP FEDSTATS_Country
+download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv",
+              'FEDSTATS_Country.csv')
+FEDSTATS_Country <- read.csv("FEDSTATS_Country.csv", header =  TRUE)
+
+#reshaping the data
+FGDP <- FGDP[2:191,c(1,2,4,5)]
+rownames(FGDP) <- NULL
+FGDP <- rename(FGDP,CountryCode = X)
+                                     
+mergedDT <- merge(FGDP, FEDSTATS_Country, by = 'CountryCode')
+
+fiscalyear<- grep("fiscal",tolower(mergedDT$Special.Notes))
+sum(grepl("june",tolower(mergedDT$Special.Notes[fiscalyear])))
+
+```
+## Question 5
+You can use the quantmod (http://www.quantmod.com/) package to get historical stock prices for publicly traded companies on the NASDAQ and NYSE. Use the following code to download data on Amazon's stock price and get the times the data was sampled.
+How many values were collected in 2012? How many values were collected on Mondays in 2012?
+```{r}
+#install.packages("quantmod")
+library(quantmod)
+amzn = getSymbols("AMZN",auto.assign=FALSE)
+sampleTimes = index(amzn)
+
+length(grep("2012",sampleTimes))
+```
